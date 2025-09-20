@@ -11,6 +11,32 @@ export default function Trivia() {
   const [answer, setAnswer] = useState({ correct: "none", wrong: "none" });
   const [score, setScore] = useState(0);
 
+  // Controlled input state
+  const [amount, setAmount] = useState(10);
+  const [difficulty, setDifficulty] = useState("easy");
+
+  const triviaurl =
+    // "https://opentdb.com/api.php?amount=10&category=15&difficulty=medium";
+    `https://opentdb.com/api.php?amount=${amount}&category=15&difficulty=${difficulty}`;
+
+  const fetchTrivia = async () => {
+    const response = await fetch(triviaurl);
+    const data = await response.json();
+    console.log(data.results[0].question);
+    setTrivia(data.results);
+    setQuestionNo(0);
+    setScore(0);
+  };
+
+  // useEffect(() => {
+  //   // setTrivia(sampleQuestions);
+  //   fetchTrivia();
+  // }, []);
+
+  useEffect(() => {
+    checkEnd();
+  }, [score]);
+
   function checkEnd() {
     if (questionNo + 1 >= trivia.length) {
       console.log("END OF QUIZ");
@@ -20,7 +46,7 @@ export default function Trivia() {
   }
 
   const nextQuestion = () => {
-    if (checkEnd()) {
+    if (questionNo + 1 >= trivia.length) {
       return;
     }
     setQuestionNo((prev) => prev + 1);
@@ -43,33 +69,73 @@ export default function Trivia() {
     }, 1000); // Hide the alert after 1 second
   };
 
-  const triviaurl =
-    "https://opentdb.com/api.php?amount=10&category=15&difficulty=medium";
-  // `https://opentdb.com/api.php?amount=${15}&category=15&difficulty=medium`;
-
-  const fetchTrivia = async () => {
-    const response = await fetch(triviaurl);
-    const data = await response.json();
-    console.log(data.results[0].question);
-    setTrivia(data.results);
+  const handleSettingsSubmit = (e) => {
+    e.preventDefault();
+    fetchTrivia();
   };
 
-  useEffect(() => {
-    setTrivia(sampleQuestions);
-    // fetchTrivia();
-  }, []);
-
-  useEffect(() => {
-    checkEnd();
-  }, [score]);
-
   if (trivia.length === 0) {
-    return <h2>Loading...</h2>;
+    return (
+      <>
+        <h2>Preparing...</h2>
+        <form onSubmit={handleSettingsSubmit} style={{ marginBottom: "20px" }}>
+          <label>
+            Amount:
+            <input
+              type="number"
+              min="1"
+              max="50"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              style={{ margin: "0 10px" }}
+            />
+          </label>
+          <label>
+            Difficulty:
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value)}
+              style={{ margin: "0 10px" }}
+            >
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+          <button type="submit">Start Quiz</button>
+        </form>
+      </>
+    );
   }
 
   return (
     <>
-      {console.log(trivia)}
+      <form onSubmit={handleSettingsSubmit} style={{ marginBottom: "20px" }}>
+        <label>
+          Amount:
+          <input
+            type="number"
+            min="1"
+            max="50"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            style={{ margin: "0 10px" }}
+          />
+        </label>
+        <label>
+          Difficulty:
+          <select
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value)}
+            style={{ margin: "0 10px" }}
+          >
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+        <button type="submit">Restart Quiz</button>
+      </form>
 
       <ScoreBanner score={score} trivia={trivia} questionNo={questionNo} />
 
