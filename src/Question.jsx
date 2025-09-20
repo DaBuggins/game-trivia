@@ -1,37 +1,46 @@
 import { useEffect, useState } from "react";
+import decodeHTML from "./utils";
 
-export default function Question({ question, nextQuestion }) {
+export default function Question({ trivia, wrongAnswer, correctAnswer }) {
+  if (!trivia) return null;
+
   const [choices, setChoices] = useState([]);
+  const [disableButton, setDisableButton] = useState(false);
 
-  const decodeHTML = function (html) {
-    var txt = document.createElement("textarea");
-    txt.innerHTML = html;
-    return txt.value;
+  const toggleDisable = () => {
+    setDisableButton(true);
   };
 
   const handleClick = (e) => {
-    if (e.target.innerText === decodeHTML(question.correct_answer)) {
-      alert("Correct!");
-      nextQuestion();
+    if (e.target.innerText === decodeHTML(trivia.correct_answer)) {
+      correctAnswer();
+      toggleDisable();
     } else {
-      alert("Wrong!");
+      wrongAnswer();
+      toggleDisable();
     }
   };
 
   useEffect(() => {
-    const answers = [...question.incorrect_answers, question.correct_answer];
+    const answers = [...trivia.incorrect_answers, trivia.correct_answer];
     setChoices(answers.sort(() => Math.random() - 0.5));
-  }, [question]);
+    setDisableButton(false);
+  }, [trivia]);
 
   return (
     <>
-      <h2>Question: {decodeHTML(question.question)}</h2>
+      <h2>{decodeHTML(trivia.question)}</h2>
       <h3>
         {choices.map((c) => {
           return (
-            <div key={c} style={{ margin: "10px" }}>
-              <button onClick={handleClick}>{decodeHTML(c)}</button>
-            </div>
+            <button
+              key={c}
+              style={{ margin: "10px" }}
+              onClick={handleClick}
+              disabled={disableButton}
+            >
+              {decodeHTML(c)}
+            </button>
           );
         })}
       </h3>
