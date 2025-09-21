@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { Card } from "@mui/material";
 import decodeHTML from "./utils";
 
-export default function Question({ trivia, wrongAnswer, correctAnswer }) {
+export default function Question({ trivia, handleAnswer }) {
   if (!trivia) return null;
 
   const [choices, setChoices] = useState([]);
@@ -13,10 +14,10 @@ export default function Question({ trivia, wrongAnswer, correctAnswer }) {
 
   const handleClick = (e) => {
     if (e.target.innerText === decodeHTML(trivia.correct_answer)) {
-      correctAnswer();
+      handleAnswer(true);
       toggleDisable();
     } else {
-      wrongAnswer();
+      handleAnswer();
       toggleDisable();
     }
   };
@@ -29,13 +30,21 @@ export default function Question({ trivia, wrongAnswer, correctAnswer }) {
 
   return (
     <>
-      <h2>{decodeHTML(trivia.question)}</h2>
+      <Card sx={{ border: "solid black 2px", padding: "10px" }}>
+        <h2>{decodeHTML(trivia.question)}</h2>
+      </Card>
       <h3>
         {choices.map((c) => {
           return (
             <button
               key={c}
-              style={{ margin: "10px" }}
+              style={{
+                margin: "10px",
+                padding: "10px",
+                backgroundColor: "lightgrey",
+                fontWeight: "700",
+                fontStyle: "italic",
+              }}
               onClick={handleClick}
               disabled={disableButton}
             >

@@ -1,14 +1,14 @@
+import { Typography } from "@mui/material";
+
 export default function ScoreBanner({ score, trivia, questionNo }) {
   return (
     <>
-      <h1>Game Trivia</h1>
-      <h2>
-        Score: {score} / {trivia.length}
-      </h2>
+      <Typography variant="h2">Game Trivia</Typography>
+      <Typography variant="h4">Score: {score}</Typography>
 
-      <h3>
+      <Typography variant="overline" style={{fontSize: "2rem"}}>
         Question {questionNo + 1} / {trivia.length}
-      </h3>
+      </Typography>
     </>
   );
 }

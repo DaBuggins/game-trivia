@@ -4,16 +4,21 @@ import Question from "./Question";
 import sampleQuestions from "./sampleQuestions";
 import AnswerFlash from "./AnswerFlash";
 import ScoreBanner from "./ScoreBanner";
+import Options from "./Options";
+import { Typography, Box } from "@mui/material";
 
 export default function Trivia() {
+  // set no. questions & difficulty
+  const [amount, setAmount] = useState(10);
+  const [difficulty, setDifficulty] = useState("easy");
+
+  // fetch data and track questions/answers
   const [trivia, setTrivia] = useState([]);
   const [questionNo, setQuestionNo] = useState(0);
   const [answer, setAnswer] = useState({ correct: "none", wrong: "none" });
   const [score, setScore] = useState(0);
 
-  // Controlled input state
-  const [amount, setAmount] = useState(10);
-  const [difficulty, setDifficulty] = useState("easy");
+  const isQuizEnd = questionNo >= trivia.length;
 
   const triviaurl =
     // "https://opentdb.com/api.php?amount=10&category=15&difficulty=medium";
@@ -28,45 +33,24 @@ export default function Trivia() {
     setScore(0);
   };
 
-  // useEffect(() => {
-  //   // setTrivia(sampleQuestions);
-  //   fetchTrivia();
-  // }, []);
-
-  useEffect(() => {
-    checkEnd();
-  }, [score]);
-
-  function checkEnd() {
-    if (questionNo + 1 >= trivia.length) {
-      console.log("END OF QUIZ");
-      console.log(`SCORE: `, score);
-      return true;
-    }
-  }
-
   const nextQuestion = () => {
-    if (questionNo + 1 >= trivia.length) {
+    if (isQuizEnd) {
       return;
     }
     setQuestionNo((prev) => prev + 1);
   };
 
-  const wrongAnswer = () => {
-    setAnswer({ wrong: "block", correct: "none" });
+  const handleAnswer = (isCorrect) => {
+    if (isCorrect) {
+      setScore((score) => score + 1);
+      setAnswer({ ...answer, correct: "block", wrong: "none" });
+    } else {
+      setAnswer({ correct: "none", wrong: "block" });
+    }
     setTimeout(() => {
       setAnswer({ wrong: "none", correct: "none" });
       nextQuestion();
-    }, 1000); // Hide the alert after 1 second
-  };
-
-  const correctAnswer = () => {
-    setScore((score) => score + 1);
-    setAnswer({ ...answer, correct: "block" });
-    setTimeout(() => {
-      setAnswer({ wrong: "none", correct: "none" });
-      nextQuestion();
-    }, 1000); // Hide the alert after 1 second
+    }, 1000);
   };
 
   const handleSettingsSubmit = (e) => {
@@ -77,75 +61,58 @@ export default function Trivia() {
   if (trivia.length === 0) {
     return (
       <>
-        <h2>Preparing...</h2>
-        <form onSubmit={handleSettingsSubmit} style={{ marginBottom: "20px" }}>
-          <label>
-            Amount:
-            <input
-              type="number"
-              min="1"
-              max="50"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              style={{ margin: "0 10px" }}
-            />
-          </label>
-          <label>
-            Difficulty:
-            <select
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value)}
-              style={{ margin: "0 10px" }}
-            >
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </label>
-          <button type="submit">Start Quiz</button>
-        </form>
+        <Options
+          handleSettingsSubmit={handleSettingsSubmit}
+          amount={amount}
+          setAmount={setAmount}
+          difficulty={difficulty}
+          setDifficulty={setDifficulty}
+        />
       </>
     );
   }
 
   return (
     <>
-      <form onSubmit={handleSettingsSubmit} style={{ marginBottom: "20px" }}>
-        <label>
-          Amount:
-          <input
-            type="number"
-            min="1"
-            max="50"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            style={{ margin: "0 10px" }}
-          />
-        </label>
-        <label>
-          Difficulty:
-          <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-            style={{ margin: "0 10px" }}
-          >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </label>
-        <button type="submit">Restart Quiz</button>
-      </form>
-
-      <ScoreBanner score={score} trivia={trivia} questionNo={questionNo} />
-
-      <AnswerFlash isWrong={answer.wrong} isCorrect={answer.correct} />
-      <Question
-        trivia={trivia[questionNo]}
-        wrongAnswer={wrongAnswer}
-        correctAnswer={correctAnswer}
-      />
-      <button onClick={nextQuestion}>Skip</button>
+      <Box
+        sx={{
+          bgcolor: "background.paper",
+          boxShadow: 1,
+          borderRadius: 2,
+          p: 2,
+          minWidth: 300,
+        }}
+      >
+        {isQuizEnd ? (
+          // End card UI
+          <div style={{ textAlign: "center" }}>
+            <Typography variant="h3" gutterBottom>
+              Quiz Complete!
+            </Typography>
+            <Typography variant="h5" gutterBottom>
+              You Scored: {score} / {trivia.length}
+            </Typography>
+            <br />
+            <Options
+              handleSettingsSubmit={handleSettingsSubmit}
+              amount={amount}
+              setAmount={setAmount}
+              difficulty={difficulty}
+              setDifficulty={setDifficulty}
+            />
+          </div>
+        ) : (
+          <>
+            <ScoreBanner
+              score={score}
+              trivia={trivia}
+              questionNo={questionNo}
+            />
+            <AnswerFlash isWrong={answer.wrong} isCorrect={answer.correct} />
+            <Question trivia={trivia[questionNo]} handleAnswer={handleAnswer} />
+          </>
+        )}
+      </Box>
     </>
   );
 }
